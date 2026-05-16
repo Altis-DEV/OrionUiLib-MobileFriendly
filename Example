@@ -1,0 +1,439 @@
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Altis-DEV/OrionUiLib-Fixed-Mobile-Draggable-And-Slider/refs/heads/main/Source.txt"))()
+
+local Window = OrionLib:MakeWindow({
+	Name = "Example By Altis",
+	HidePremium = false,
+	SaveConfig = false,
+	ConfigFolder = "Example",
+	IntroEnabled = true,
+	IntroText = "Altis",
+	Theme = "Dark"
+})
+
+----------------------------------------------------------------
+-- SETTINGS
+----------------------------------------------------------------
+
+local BackGroundImage = "rbxassetid://89857491242106"
+
+local ToggleUiImage = ""
+
+local ToggleUiSize = UDim2.new(0,60,0,60)
+local ToggleUiPosition = UDim2.new(0,20,0.5,-30)
+
+local ToggleUiCorner = 16
+local MainUiCorner = 18
+
+local ToggleKeybind = Enum.KeyCode.RightShift
+
+local ResizeMinX = 500
+local ResizeMaxX = 1200
+
+local ResizeMinY = 300
+local ResizeMaxY = 900
+
+----------------------------------------------------------------
+-- SERVICES
+----------------------------------------------------------------
+
+local CoreGui = game:GetService("CoreGui")
+local UIS = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+----------------------------------------------------------------
+-- UI MOD
+----------------------------------------------------------------
+
+task.spawn(function()
+
+	repeat task.wait() until CoreGui:FindFirstChildWhichIsA("ScreenGui")
+
+	for _,gui in pairs(CoreGui:GetDescendants()) do
+
+		if gui:IsA("ScreenGui") and gui.Name:find("Orion") then
+
+			local Main
+
+			for _,v in pairs(gui:GetDescendants()) do
+
+				if v:IsA("Frame") and v.Size.X.Offset > 500 then
+					Main = v
+					break
+				end
+			end
+
+			if Main then
+
+				------------------------------------------------------------
+				-- BACKGROUND
+				------------------------------------------------------------
+
+				Main.BackgroundTransparency = 1
+
+				local BG = Instance.new("ImageLabel")
+
+				BG.Name = "AltisBackground"
+				BG.Parent = Main
+
+				BG.Size = UDim2.new(1,0,1,0)
+				BG.Position = UDim2.new(0,0,0,0)
+
+				BG.Image = BackGroundImage
+				BG.ImageTransparency = 0.02
+
+				BG.BackgroundTransparency = 1
+				BG.ScaleType = Enum.ScaleType.Stretch
+
+				BG.ZIndex = 0
+
+				local Corner = Instance.new("UICorner")
+
+				Corner.CornerRadius = UDim.new(0,MainUiCorner)
+				Corner.Parent = BG
+
+				------------------------------------------------------------
+				-- STYLE
+				------------------------------------------------------------
+
+				for _,v in pairs(Main:GetDescendants()) do
+
+					if v:IsA("Frame") then
+						v.BackgroundTransparency = 1
+						v.BorderSizePixel = 0
+					end
+
+					if v:IsA("ScrollingFrame") then
+						v.BackgroundTransparency = 1
+						v.ScrollBarImageTransparency = 1
+					end
+
+					if v:IsA("TextButton") then
+						v.BackgroundTransparency = 1
+						v.BorderSizePixel = 0
+					end
+
+					if v:IsA("TextBox") then
+						v.BackgroundTransparency = 1
+						v.BorderSizePixel = 0
+					end
+
+					if v:IsA("ImageButton") then
+						v.BackgroundTransparency = 1
+					end
+
+					if v:IsA("ImageLabel") and v ~= BG then
+						v.BackgroundTransparency = 1
+					end
+
+					if v:IsA("TextLabel")
+					or v:IsA("TextButton")
+					or v:IsA("TextBox") then
+
+						v.TextColor3 = Color3.fromRGB(255,255,255)
+						v.TextStrokeTransparency = 0.7
+					end
+
+					if v:IsA("GuiObject") and v ~= BG then
+						v.ZIndex = v.ZIndex + 10
+					end
+				end
+
+				Main:GetPropertyChangedSignal("Visible"):Connect(function()
+					BG.Visible = Main.Visible
+				end)
+
+				------------------------------------------------------------
+				-- RESIZE BUTTON
+				------------------------------------------------------------
+
+				local ResizeButton = Instance.new("TextButton")
+
+				ResizeButton.Parent = Main
+
+				ResizeButton.AnchorPoint = Vector2.new(1,1)
+
+				ResizeButton.Position = UDim2.new(1,-6,1,-6)
+				ResizeButton.Size = UDim2.new(0,20,0,20)
+
+				ResizeButton.BackgroundTransparency = 1
+
+				ResizeButton.Text = "<>"
+				ResizeButton.TextSize = 14
+
+				ResizeButton.TextColor3 = Color3.fromRGB(255,255,255)
+				ResizeButton.TextStrokeTransparency = 0.7
+
+				ResizeButton.ZIndex = 999999
+
+				local Resizing = false
+
+				local ResizeStart
+				local StartSize
+
+				ResizeButton.InputBegan:Connect(function(input)
+
+					if input.UserInputType == Enum.UserInputType.MouseButton1
+					or input.UserInputType == Enum.UserInputType.Touch then
+
+						Resizing = true
+
+						ResizeStart = input.Position
+						StartSize = Main.Size
+
+						input.Changed:Connect(function()
+
+							if input.UserInputState == Enum.UserInputState.End then
+								Resizing = false
+							end
+						end)
+					end
+				end)
+
+				UIS.InputChanged:Connect(function(input)
+
+					if Resizing and (
+						input.UserInputType == Enum.UserInputType.MouseMovement
+						or input.UserInputType == Enum.UserInputType.Touch
+					) then
+
+						local Delta = input.Position - ResizeStart
+
+						Main.Size = UDim2.new(
+							StartSize.X.Scale,
+
+							math.clamp(
+								StartSize.X.Offset + Delta.X,
+								ResizeMinX,
+								ResizeMaxX
+							),
+
+							StartSize.Y.Scale,
+
+							math.clamp(
+								StartSize.Y.Offset + Delta.Y,
+								ResizeMinY,
+								ResizeMaxY
+							)
+						)
+					end
+				end)
+
+				------------------------------------------------------------
+				-- TOGGLE UI
+				------------------------------------------------------------
+
+				local ToggleGui = Instance.new("ScreenGui")
+
+				ToggleGui.Name = "AltisToggle"
+				ToggleGui.Parent = PlayerGui
+
+				ToggleGui.ResetOnSpawn = false
+
+				local Toggle = Instance.new("ImageButton")
+
+				Toggle.Parent = ToggleGui
+
+				Toggle.Size = ToggleUiSize
+				Toggle.Position = ToggleUiPosition
+
+				Toggle.BackgroundColor3 = Color3.fromRGB(20,20,20)
+
+				Toggle.Image = ToggleUiImage
+				Toggle.AutoButtonColor = true
+
+				local ToggleCornerObject = Instance.new("UICorner")
+
+				ToggleCornerObject.CornerRadius = UDim.new(0,ToggleUiCorner)
+				ToggleCornerObject.Parent = Toggle
+
+				local Stroke = Instance.new("UIStroke")
+
+				Stroke.Parent = Toggle
+
+				Stroke.Color = Color3.fromRGB(255,255,255)
+				Stroke.Transparency = 0.7
+				Stroke.Thickness = 1.2
+
+				------------------------------------------------------------
+				-- TOGGLE DRAG
+				------------------------------------------------------------
+
+				local Dragging = false
+
+				local DragInput
+				local DragStart
+				local StartPos
+
+				local function UpdateDrag(input)
+
+					local Delta = input.Position - DragStart
+
+					Toggle.Position = UDim2.new(
+						StartPos.X.Scale,
+						StartPos.X.Offset + Delta.X,
+
+						StartPos.Y.Scale,
+						StartPos.Y.Offset + Delta.Y
+					)
+				end
+
+				Toggle.InputBegan:Connect(function(input)
+
+					if input.UserInputType == Enum.UserInputType.MouseButton1
+					or input.UserInputType == Enum.UserInputType.Touch then
+
+						Dragging = true
+
+						DragStart = input.Position
+						StartPos = Toggle.Position
+
+						input.Changed:Connect(function()
+
+							if input.UserInputState == Enum.UserInputState.End then
+								Dragging = false
+							end
+						end)
+					end
+				end)
+
+				Toggle.InputChanged:Connect(function(input)
+
+					if input.UserInputType == Enum.UserInputType.MouseMovement
+					or input.UserInputType == Enum.UserInputType.Touch then
+
+						DragInput = input
+					end
+				end)
+
+				UIS.InputChanged:Connect(function(input)
+
+					if Dragging and input == DragInput then
+						UpdateDrag(input)
+					end
+				end)
+
+				------------------------------------------------------------
+				-- SHOW / HIDE
+				------------------------------------------------------------
+
+				local UiOpened = true
+
+				local function ToggleUi()
+
+					UiOpened = not UiOpened
+
+					Main.Visible = UiOpened
+				end
+
+				Toggle.MouseButton1Click:Connect(ToggleUi)
+
+				------------------------------------------------------------
+				-- KEYBIND
+				------------------------------------------------------------
+
+				UIS.InputBegan:Connect(function(input,gameProcessed)
+
+					if gameProcessed then
+						return
+					end
+
+					if input.KeyCode == ToggleKeybind then
+						ToggleUi()
+					end
+				end)
+
+			end
+
+			break
+		end
+	end
+end)
+
+----------------------------------------------------------------
+-- EXAMPLE
+----------------------------------------------------------------
+
+local Tab = Window:MakeTab({
+	Name = "Tab 1",
+	Icon = "rbxassetid://4483345998",
+	PremiumOnly = false
+})
+
+OrionLib:MakeNotification({
+	Name = "Title!",
+	Content = "Notification content... what will it say??",
+	Image = "rbxassetid://4483345998",
+	Time = 5
+})
+
+Tab:AddButton({
+	Name = "Button!",
+	Callback = function()
+		print("button pressed")
+	end
+})
+
+Tab:AddToggle({
+	Name = "This is a toggle!",
+	Default = false,
+
+	Callback = function(Value)
+		print(Value)
+	end
+})
+
+Tab:AddColorpicker({
+	Name = "Colorpicker",
+	Default = Color3.fromRGB(255, 0, 0),
+
+	Callback = function(Value)
+		print(Value)
+	end
+})
+
+Tab:AddSlider({
+	Name = "Slider",
+	Min = 0,
+	Max = 20,
+	Default = 5,
+
+	Color = Color3.fromRGB(255,255,255),
+
+	Increment = 1,
+	ValueName = "bananas",
+
+	Callback = function(Value)
+		print(Value)
+	end
+})
+
+Tab:AddLabel("Label")
+
+Tab:AddParagraph("Paragraph","Paragraph Content")
+
+Tab:AddTextbox({
+	Name = "Textbox",
+	Default = "default box input",
+
+	TextDisappear = true,
+
+	Callback = function(Value)
+		print(Value)
+	end
+})
+
+Tab:AddDropdown({
+	Name = "Dropdown",
+	Default = "1",
+
+	Options = {"1", "2"},
+
+	Callback = function(Value)
+		print(Value)
+	end
+})
+
+OrionLib:Init()
