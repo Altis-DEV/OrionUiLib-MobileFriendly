@@ -1,3 +1,5 @@
+-- Orion Ui Library Modded By Altis. Added Ui Toggle,Background Image,Resize Corner. Fixed Draggable,Slider,Colorpicker,...
+
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Altis-DEV/OrionUiLib-Fixed-Mobile-Draggable-And-Slider/refs/heads/main/Source.txt"))()
 
 local Window = OrionLib:MakeWindow({
@@ -16,7 +18,7 @@ local Window = OrionLib:MakeWindow({
 
 local BackGroundImage = "rbxassetid://89857491242106"
 
-local ToggleUiImage = ""
+local ToggleUiImage = nil
 
 local ToggleUiSize = UDim2.new(0,60,0,60)
 local ToggleUiPosition = UDim2.new(0,20,0.5,-30)
