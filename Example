@@ -30,8 +30,8 @@ local function OrionMod()
 	local Player = Players.LocalPlayer
 	local PlayerGui = Player:WaitForChild("PlayerGui")
 
-	local BackGroundImage = "rbxassetid://89857491242106"
-	local ToggleUiImage = "rbxassetid://4483345998"
+	local BackGroundImage = "rbxassetid://121863942764840"
+	local ToggleUiImage = "rbxassetid://115202978995434"
 
 	local ToggleUiSize = UDim2.new(0, 45, 0, 45)
 	local ToggleUiPosition = UDim2.new(0, 20, 0.5, -22)
@@ -130,7 +130,7 @@ local function OrionMod()
 			BG.Position = UDim2.new(0, 0, 0, 0)
 			BG.BackgroundTransparency = 1
 			BG.Image = BackGroundImage
-			BG.ImageTransparency = 0.02
+			BG.ImageTransparency = 0.2
 			BG.ScaleType = Enum.ScaleType.Stretch
 			BG.ZIndex = 0
 
@@ -165,76 +165,93 @@ local function OrionMod()
 			end)
 		end
 
-		------------------------------------------------------------
-		-- RESIZE CORNER
-		------------------------------------------------------------
+------------------------------------------------------------
+-- RESIZE CORNER
+------------------------------------------------------------
 
-		if getgenv().ResizeCorner then
-			if not Main:FindFirstChild("AltisResizeCorner") then
-				local ResizeButton = Instance.new("TextButton")
-				ResizeButton.Name = "AltisResizeCorner"
-				ResizeButton.Parent = Main
-				ResizeButton.AnchorPoint = Vector2.new(1, 1)
-				ResizeButton.Position = UDim2.new(1, -6, 1, -6)
-				ResizeButton.Size = UDim2.new(0, 20, 0, 20)
-				ResizeButton.BackgroundTransparency = 1
-				ResizeButton.BorderSizePixel = 0
-				ResizeButton.Text = "<>"
-				ResizeButton.TextSize = 14
-				ResizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-				ResizeButton.TextStrokeTransparency = 0.7
-				ResizeButton.ZIndex = 999999
+if getgenv().ResizeCorner then
+	if not Main:FindFirstChild("AltisResizeCorner") then
+		local ResizeButton = Instance.new("TextButton")
+		ResizeButton.Name = "AltisResizeCorner"
+		ResizeButton.Parent = Main
+		ResizeButton.AnchorPoint = Vector2.new(1, 1)
+		ResizeButton.Position = UDim2.new(1, -6, 1, -6)
+		ResizeButton.Size = UDim2.new(0, 20, 0, 20)
+		ResizeButton.BackgroundTransparency = 1
+		ResizeButton.BorderSizePixel = 0
+		ResizeButton.Text = ""
+		ResizeButton.TextTransparency = 1
+		ResizeButton.AutoButtonColor = false
+		ResizeButton.ZIndex = 999999
 
-				local Resizing = false
-				local ResizeStart
-				local StartSize
+		local ResizeImage = Instance.new("ImageLabel")
+		ResizeImage.Name = "ResizeIcon"
+		ResizeImage.Parent = ResizeButton
+		ResizeImage.BackgroundTransparency = 1
+		ResizeImage.BorderSizePixel = 0
+		ResizeImage.Size = UDim2.fromScale(1, 1)
+		ResizeImage.Position = UDim2.new(0, 0, 0, 0)
+		ResizeImage.Image = "rbxassetid://130573561415972"
+		ResizeImage.ImageTransparency = 0.15
+		ResizeImage.ZIndex = ResizeButton.ZIndex + 1
 
-				ResizeButton.InputBegan:Connect(function(input)
-					if input.UserInputType == Enum.UserInputType.MouseButton1
-						or input.UserInputType == Enum.UserInputType.Touch then
-						Resizing = true
-						ResizeStart = input.Position
-						StartSize = Main.Size
+		local ResizeCornerObject = Instance.new("UICorner")
+		ResizeCornerObject.CornerRadius = UDim.new(0, 6)
+		ResizeCornerObject.Parent = ResizeButton
 
-						input.Changed:Connect(function()
-							if input.UserInputState == Enum.UserInputState.End then
-								Resizing = false
-							end
-						end)
-					end
-				end)
+		local Resizing = false
+		local ResizeStart
+		local StartSize
 
-				UIS.InputChanged:Connect(function(input)
-					if Resizing and (
-						input.UserInputType == Enum.UserInputType.MouseMovement
-						or input.UserInputType == Enum.UserInputType.Touch
-					) then
-						local Delta = input.Position - ResizeStart
+		ResizeButton.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch then
+				Resizing = true
+				ResizeStart = input.Position
+				StartSize = Main.Size
 
-						Main.Size = UDim2.new(
-							StartSize.X.Scale,
-							math.clamp(StartSize.X.Offset + Delta.X, 500, 1200),
-							StartSize.Y.Scale,
-							math.clamp(StartSize.Y.Offset + Delta.Y, 300, 900)
-						)
+				input.Changed:Connect(function()
+					if input.UserInputState == Enum.UserInputState.End then
+						Resizing = false
 					end
 				end)
 			end
-		end
+		end)
+
+		UIS.InputChanged:Connect(function(input)
+			if Resizing and (
+				input.UserInputType == Enum.UserInputType.MouseMovement
+				or input.UserInputType == Enum.UserInputType.Touch
+			) then
+				local Delta = input.Position - ResizeStart
+
+				Main.Size = UDim2.new(
+					StartSize.X.Scale,
+					math.clamp(StartSize.X.Offset + Delta.X, 500, 1200),
+					StartSize.Y.Scale,
+					math.clamp(StartSize.Y.Offset + Delta.Y, 300, 900)
+				)
+			end
+		end)
+	end
+end
 
 		------------------------------------------------------------
 		-- TOGGLE UI
 		------------------------------------------------------------
 
 		if getgenv().ToggleUi then
-			local ToggleGui = PlayerGui:FindFirstChild("AltisToggle")
-			if not ToggleGui then
-				ToggleGui = Instance.new("ScreenGui")
-				ToggleGui.Name = "AltisToggle"
-				ToggleGui.Parent = PlayerGui
-				ToggleGui.ResetOnSpawn = false
-				ToggleGui.IgnoreGuiInset = true
-			end
+			local OldToggle = PlayerGui:FindFirstChild("AltisToggle")
+
+                        if OldToggle then
+	                        OldToggle:Destroy()
+                        end
+
+local ToggleGui = Instance.new("ScreenGui")
+ToggleGui.Name = "AltisToggle"
+ToggleGui.ResetOnSpawn = false
+ToggleGui.IgnoreGuiInset = true
+ToggleGui.Parent = PlayerGui
 
 			local Toggle = ToggleGui:FindFirstChild("AltisToggleButton")
 			if not Toggle then
@@ -290,6 +307,8 @@ local function OrionMod()
 						DragInput = input
 					end
 				end)
+
+
 
 				Toggle.InputEnded:Connect(function(input)
 					if input.UserInputType == Enum.UserInputType.MouseButton1
@@ -360,7 +379,6 @@ local function OrionMod()
 end
 
 OrionMod()
-
 ----------------------------------------------------------------
 -- EXAMPLE
 ----------------------------------------------------------------
